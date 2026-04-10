@@ -1,0 +1,55 @@
+name: False positive report
+description: Report a rule that is firing in a way that appears incorrect or too broad
+title: "[False Positive]: "
+labels:
+  - false-positive
+body:
+  - type: markdown
+    attributes:
+      value: |
+        False-positive reports are useful when they are specific.
+        Include enough context to understand what fired, why it seems wrong, and what environment assumptions matter.
+
+  - type: input
+    id: rule_id
+    attributes:
+      label: Rule ID
+      placeholder: "610100"
+    validations:
+      required: true
+
+  - type: input
+    id: rule_path
+    attributes:
+      label: Rule file
+      placeholder: rules/linux/linux-persistence-techniques.xml
+    validations:
+      required: true
+
+  - type: textarea
+    id: alert_context
+    attributes:
+      label: Alert context
+      placeholder: Describe the event that triggered the rule.
+    validations:
+      required: true
+
+  - type: textarea
+    id: why_fp
+    attributes:
+      label: Why this appears to be a false positive
+      placeholder: Explain why the alert seems incorrect or too broad in context.
+    validations:
+      required: true
+
+  - type: textarea
+    id: safe_sample
+    attributes:
+      label: Safe redacted sample
+      placeholder: Paste a redacted event, alert excerpt, or log sample if safe to share.
+
+  - type: textarea
+    id: tuning
+    attributes:
+      label: Suggested tuning
+      placeholder: If you have a concrete tuning recommendation, include it here.

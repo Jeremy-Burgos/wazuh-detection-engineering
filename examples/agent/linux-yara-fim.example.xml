@@ -1,0 +1,11 @@
+<agent_config>
+  <!--
+    Linux YARA FIM example.
+
+    Wazuh documentation uses /root/ as the monitored path for the Linux YARA use case.
+    Change the path to a safer lab directory if that fits your environment better.
+  -->
+  <syscheck>
+    <directories realtime="yes">/root/</directories>
+  </syscheck>
+</agent_config>

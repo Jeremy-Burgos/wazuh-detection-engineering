@@ -1,0 +1,130 @@
+name: Validate content
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install validation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-utils
+
+      - name: Reject backup, broken, and scratch artifacts
+        run: |
+          set -euo pipefail
+          BAD_FILES="$(find . -type f \( \
+            -name '*.bak' -o \
+            -name '*.bak.*' -o \
+            -name '*.save' -o \
+            -name '*.save.*' -o \
+            -name '*.broken' -o \
+            -name '*.broken.*' -o \
+            -name '*.tmp' -o \
+            -name '*.temp' -o \
+            -name '*.orig' -o \
+            -name '*.old' -o \
+            -name '*.disabled' \
+          \))"
+          if [ -n "${BAD_FILES}" ]; then
+            echo "Refusing backup or broken artifacts:"
+            echo "${BAD_FILES}"
+            exit 1
+          fi
+
+      - name: Reject duplicate decoder directory families
+        run: |
+          set -euo pipefail
+          if [ -d decoders/common ] && [ -d decoders/shared ]; then
+            echo "Do not keep both decoders/common and decoders/shared."
+            exit 1
+          fi
+
+      - name: Validate rules XML well-formedness
+        run: |
+          set -euo pipefail
+          find rules -type f -name '*.xml' | while read -r file; do
+            echo "Checking rules XML: ${file}"
+            xmllint --noout "${file}"
+          done
+
+      - name: Validate examples XML well-formedness
+        run: |
+          set -euo pipefail
+          find examples -type f -name '*.xml' | while read -r file; do
+            echo "Checking examples XML: ${file}"
+            xmllint --noout "${file}"
+          done
+
+      - name: Validate decoder XML fragments
+        run: |
+          set -euo pipefail
+          find decoders -type f -name '*.xml' | while read -r file; do
+            echo "Checking decoder XML fragment: ${file}"
+            {
+              echo "<root>"
+              cat "${file}"
+              echo "</root>"
+            } | xmllint --noout -
+          done
+
+      - name: Detect duplicate rule IDs
+        run: |
+          set -euo pipefail
+          RULE_IDS_FILE="$(mktemp)"
+          grep -RhoP '<rule id="\K[0-9]+' rules 2>/dev/null | sort > "${RULE_IDS_FILE}" || true
+          DUPES="$(uniq -d "${RULE_IDS_FILE}")"
+          if [ -n "${DUPES}" ]; then
+            echo "Duplicate rule IDs found:"
+            echo "${DUPES}"
+            exit 1
+          fi
+
+      - name: Enforce custom rule ID range
+        run: |
+          set -euo pipefail
+          BAD_IDS="$(grep -RhoP '<rule id="\K[0-9]+' rules 2>/dev/null | awk '$1 < 100000 || $1 > 120000' | sort -n | uniq)"
+          if [ -n "${BAD_IDS}" ]; then
+            echo "Custom rule IDs outside recommended 100000-120000 range:"
+            echo "${BAD_IDS}"
+            exit 1
+          fi
+
+      - name: Detect duplicate decoder names
+        run: |
+          set -euo pipefail
+          DECODER_NAMES_FILE="$(mktemp)"
+          grep -RhoP '<decoder name="\K[^"]+' decoders 2>/dev/null | sort > "${DECODER_NAMES_FILE}" || true
+          DUPES="$(uniq -d "${DECODER_NAMES_FILE}")"
+          if [ -n "${DUPES}" ]; then
+            echo "Duplicate decoder names found:"
+            echo "${DUPES}"
+            exit 1
+          fi
+
+      - name: Validate issue templates exist
+        run: |
+          test -f .github/ISSUE_TEMPLATE/bug_report.yml
+          test -f .github/ISSUE_TEMPLATE/false_positive_report.yml
+          test -f .github/ISSUE_TEMPLATE/detection_content_submission.yml
+          test -f .github/ISSUE_TEMPLATE/config.yml
+          test -f .github/PULL_REQUEST_TEMPLATE.md
+
+      - name: Basic docs presence check
+        run: |
+          test -f README.md
+          test -f TESTED_ON.md
+          test -f SECURITY.md
+          test -f CONTRIBUTING.md
+          test -f CHANGELOG.md
+          test -f docs/validation.md
+          test -f docs/rollback.md
+          test -f docs/redaction-policy.md

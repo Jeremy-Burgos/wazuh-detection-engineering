@@ -1,0 +1,66 @@
+name: Detection content submission
+description: Propose a new rule, decoder, list example, or detection pack
+title: "[Detection]: "
+labels:
+  - detection-content
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This repository accepts curated detection-content suggestions.
+        Keep submissions narrow, grounded, and technically clear.
+
+  - type: dropdown
+    id: content_type
+    attributes:
+      label: Content type
+      options:
+        - Rule
+        - Decoder
+        - CDB list example
+        - Documentation
+        - Detection pack
+    validations:
+      required: true
+
+  - type: input
+    id: proposed_path
+    attributes:
+      label: Proposed path
+      placeholder: rules/macos/macos-frigidstealer.xml
+    validations:
+      required: true
+
+  - type: textarea
+    id: use_case
+    attributes:
+      label: Detection use case
+      placeholder: What problem does this solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: logic
+    attributes:
+      label: Detection logic
+      placeholder: Describe how the rule, decoder, or list works.
+    validations:
+      required: true
+
+  - type: textarea
+    id: sample_data
+    attributes:
+      label: Sample data or event format
+      placeholder: Provide a redacted sample log or event format if available.
+
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation performed
+      placeholder: Include logtest output, test steps, or real-world confirmation.
+
+  - type: textarea
+    id: fp_notes
+    attributes:
+      label: False positive considerations
+      placeholder: Describe likely noise, tuning requirements, or environment assumptions.

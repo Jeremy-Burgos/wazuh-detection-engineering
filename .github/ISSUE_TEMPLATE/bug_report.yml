@@ -1,0 +1,55 @@
+name: Bug report
+description: Report a concrete issue with repository content, structure, or behavior
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for real repository issues. Do not use it for private security disclosures.
+        If the issue involves secrets, unsafe guidance, or sensitive data exposure, use the private path in SECURITY.md.
+
+  - type: input
+    id: affected_path
+    attributes:
+      label: Affected file or path
+      placeholder: rules/linux/linux-persistence-techniques.xml
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: What is wrong
+      placeholder: Describe the problem directly and precisely.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      placeholder: Include the exact steps, sample input, or Wazuh behavior.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: What should have happened instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation details
+      placeholder: Include wazuh-logtest output, daemon validation output, or sample alerts if safe to share.
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      placeholder: Version, platform, tuning notes, or anything else that matters.

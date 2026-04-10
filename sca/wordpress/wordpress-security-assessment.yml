@@ -1,0 +1,114 @@
+policy:
+  id: "wordpress_assessment"
+  file: "wordpress-security-assessment.yml"
+  name: "Security configuration assessment for WordPress installations"
+  description: "Checks a Linux-hosted WordPress installation for common hardening and misconfiguration issues."
+  references:
+    - "https://wordpress.org/documentation/article/hardening-wordpress/"
+    - "https://wpsecuritychecklist.org/items/"
+
+requirements:
+  title: "Check that the endpoint is a WordPress host and has wp-cli installed"
+  description: "This policy only applies to Linux endpoints hosting WordPress with WP-CLI available."
+  condition: all
+  rules:
+    - "f:$wp_install_dir/wp-config.php"
+    - 'c:wp --info --allow-root -> r:^WP-CLI version'
+
+variables:
+  $wp_install_dir: /var/www/html
+  $wp_user: www-data
+  $wp_security_plugin: wordfence
+
+checks:
+  - id: 100000
+    title: "Ensure the WordPress core version is up to date"
+    description: "Checks whether WordPress reports that it is already at the latest version."
+    rationale: "Outdated WordPress core increases exposure to known vulnerabilities."
+    remediation: "Update WordPress core to the latest stable version."
+    condition: all
+    rules:
+      - 'c:runuser -l $wp_user -c "wp core check-update --path=$wp_install_dir" -> r:WordPress is at the latest version'
+
+  - id: 100001
+    title: "Ensure WordPress debugging is disabled"
+    description: "Checks whether WP_DEBUG is enabled."
+    rationale: "Debug output can expose sensitive information about the application and environment."
+    remediation: "Set WP_DEBUG to false in wp-config.php."
+    condition: none
+    rules:
+      - 'c:runuser -l $wp_user -c "wp config list WP_DEBUG --path=$wp_install_dir" -> r:true|1'
+
+  - id: 100002
+    title: "Ensure common administrative usernames are not used"
+    description: "Checks for common administrative usernames such as admin or webmaster."
+    rationale: "Predictable administrative usernames make brute-force and guessing attacks easier."
+    remediation: "Rename or replace common administrative usernames."
+    condition: none
+    rules:
+      - 'c:runuser -l $wp_user -c "wp user list --field=user_login --path=$wp_install_dir" -> r:admin|administrator|backup|webmaster|wp-admin'
+
+  - id: 100003
+    title: "Ensure backup and database dump files are not left in the WordPress root"
+    description: "Checks for common backup or export file extensions in the installation root."
+    rationale: "Backup files in the web root can expose credentials or other sensitive content."
+    remediation: "Remove backups and database exports from the WordPress root directory."
+    condition: none
+    rules:
+      - 'c:sh -c "cd $wp_install_dir && ls -1" -> r:\.zip$|\.back$|\.backup$|\.bak$|\.old$|\.previous$|\.sql$'
+
+  - id: 100004
+    title: "Ensure WordPress folder permissions are set to 755"
+    description: "Checks directory permissions under the WordPress installation."
+    rationale: "Overly permissive directory permissions increase risk of unauthorized modification or disclosure."
+    remediation: "Set WordPress directories to 755."
+    condition: all
+    rules:
+      - 'c:find $wp_install_dir -type d -printf "%m\n" | sort -u -> r:^755$'
+
+  - id: 100005
+    title: "Ensure WordPress file permissions are set to 644"
+    description: "Checks file permissions under the WordPress installation."
+    rationale: "Overly permissive file permissions increase risk of tampering or disclosure."
+    remediation: "Set WordPress files to 644 where appropriate."
+    condition: all
+    rules:
+      - 'c:find $wp_install_dir -type f -printf "%m\n" | sort -u -> r:^644$'
+
+  - id: 100006
+    title: "Ensure the .htaccess file permissions are set to 644"
+    description: "Checks .htaccess permissions when the file exists."
+    rationale: "Insecure permissions on .htaccess can expose or weaken server-side controls."
+    remediation: "Set .htaccess permissions to 644."
+    condition: any
+    rules:
+      - 'not f:$wp_install_dir/.htaccess'
+      - "c:stat -c '%a' $wp_install_dir/.htaccess -> r:^644$"
+
+  - id: 100007
+    title: "Ensure directory browsing is disabled"
+    description: "Checks whether Apache directory indexing is disabled in .htaccess when the file exists."
+    rationale: "Directory browsing can expose sensitive files and installation structure."
+    remediation: "Disable indexing in .htaccess, for example with Options -Indexes."
+    condition: any
+    rules:
+      - 'not f:$wp_install_dir/.htaccess'
+      - 'c:cat $wp_install_dir/.htaccess -> r:Options\s+-Indexes|Options\s+All\s+-Indexes'
+
+  - id: 100008
+    title: "Ensure the default WordPress database prefix is not used"
+    description: "Checks whether wp-config.php still uses the default wp_ database table prefix."
+    rationale: "Changing the default table prefix modestly reduces exposure to simplistic SQL injection assumptions."
+    remediation: "Change the table prefix from wp_ to a custom value."
+    condition: none
+    rules:
+      - "c:grep -E \"table_prefix\\s*=\\s*'wp_'\" $wp_install_dir/wp-config.php"
+
+  - id: 100009
+    title: "Ensure a security or firewall plugin is installed"
+    description: "Checks whether a chosen security plugin is present in the installed plugin list."
+    rationale: "A security plugin can add hardening or monitoring controls to the WordPress application."
+    remediation: "Install and configure a WordPress security or firewall plugin."
+    condition: all
+    rules:
+      - 'c:runuser -l $wp_user -c "wp plugin list --field=name --path=$wp_install_dir" -> r:^$wp_security_plugin$'

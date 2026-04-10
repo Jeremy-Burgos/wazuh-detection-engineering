@@ -1,0 +1,16 @@
+# Example Linux Auditd rules for Wazuh-focused monitoring
+# Add these to /etc/audit/audit.rules or /etc/audit/rules.d/*.rules
+# Then reload with:
+#   auditctl -R /etc/audit/audit.rules
+# or restart auditd depending on your distro workflow.
+
+# Root command monitoring
+-a exit,always -F euid=0 -F arch=b64 -S execve -k audit-wazuh-c
+-a exit,always -F euid=0 -F arch=b32 -S execve -k audit-wazuh-c
+
+# Credential-access monitoring for non-root users
+-a exit,always -F arch=b64 -F auid!=-1 -F euid!=0 -S execve -k audit-wazuh-c
+-a exit,always -F arch=b64 -F path=/etc/shadow -F auid!=-1 -F euid!=0 -F perm=r -k shadow_access
+-a exit,always -F arch=b64 -F path=/etc/passwd -F auid!=-1 -F euid!=0 -F perm=r -k passwd_access
+-a exit,always -F arch=b64 -F path=/<USER_HOME_DIRECTORY>/.bash_history -F auid!=-1 -F euid!=0 -F perm=r -k history_access
+-a exit,always -F arch=b64 -F dir=/<USER_HOME_DIRECTORY>/.ssh/ -F auid!=-1 -F euid!=0 -F perm=r -k ssh_access

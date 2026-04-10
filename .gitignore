@@ -1,0 +1,53 @@
+# OS / desktop junk
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Archives / exports
+*.zip
+*.tar
+*.gz
+*.tgz
+*.7z
+
+# Backup and recovery artifacts
+*.bak
+*.bak.*
+*.save
+*.save.*
+*.broken
+*.broken.*
+*.old
+*.orig
+*.tmp
+*.temp
+*.disabled
+
+# Logs / captures
+*.log
+*.out
+*.pcap
+*.pcapng
+
+# Local testing scratch files
+scratch/
+tmp/
+temp/
+
+# Generated or private data that should not be public
+secrets/
+private/
+exports/
+investigation/

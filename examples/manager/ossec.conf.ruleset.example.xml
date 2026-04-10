@@ -1,0 +1,24 @@
+<ossec_config>
+  <ruleset>
+    <decoder_dir>ruleset/decoders</decoder_dir>
+    <rule_dir>ruleset/rules</rule_dir>
+    <rule_exclude>0215-policy_rules.xml</rule_exclude>
+
+    <list>etc/lists/audit-keys</list>
+    <list>etc/lists/amazon/aws-eventnames</list>
+    <list>etc/lists/security-eventchannel</list>
+    <list>etc/lists/malicious-ioc/malware-hashes</list>
+    <list>etc/lists/malicious-ioc/malicious-ip</list>
+    <list>etc/lists/malicious-ioc/malicious-domains</list>
+    <list>etc/lists/suspicious-programs</list>
+
+    <decoder_dir>etc/decoders</decoder_dir>
+    <rule_dir>etc/rules</rule_dir>
+
+    <list>etc/lists/malware-hashes</list>
+    <list>etc/lists/malware-hashes-koske</list>
+    <list>etc/lists/usb-drives</list>
+    <list>etc/lists/malware-hashes-md5</list>
+    <list>etc/lists/blacklist-alienvault</list>
+  </ruleset>
+</ossec_config>
